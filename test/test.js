@@ -1,4 +1,4 @@
-const bb = require("../dist/index.js");
+const bb = require("../dist/bubblebabble.js");
 
 // http://wikibin.org/articles/bubble-babble-2.html
 console.assert(bb.encode(Buffer.from("")) === "xexax");
