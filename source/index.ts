@@ -2,15 +2,15 @@ const vowels : string = 'aeiouy';
 const consonants : string = 'bcdfghklmnprstvzx';
 
 export
-function encode (input : Buffer) {
+function encode (input : Uint8Array) {
     let result : string = '';
     let checksum : number = 1;
     let i : number = 0;
 
     // create full tuples
     while (i + 1 < input.length) {
-        const byte1 : number = input.readUInt8(i);
-        const byte2 : number = input.readUInt8(i + 1);
+        const byte1 : number = input[i];
+        const byte2 : number = input[i + 1];
         result += odd_partial(byte1, checksum);
         const d : number = ((byte2 >> 4) & 15);
         const e : number = (byte2 & 15);
@@ -21,7 +21,7 @@ function encode (input : Buffer) {
 
     // handle partial tuple
     if (i < input.length) {
-        const byte1 : number = input.readUInt8(i);
+        const byte1 : number = input[i];
         result += odd_partial(byte1, checksum);
     } else {
         result += even_partial(checksum);
@@ -45,7 +45,7 @@ function even_partial (checksum : number) : string {
 };
 
 export
-function decode (input : string) : Buffer {
+function decode (input : string) : Uint8Array {
     if (input.substr(0, 1) !== 'x' || input.substr(-1, 1) !== 'x')
         throw new Error('Corrupt string');
 
@@ -74,7 +74,7 @@ function decode (input : string) : Buffer {
         const byte1 : number = decode_3part_byte(tuple[0], tuple[1], tuple[2], checksum);
         char_codes.push(byte1);
     }
-    return Buffer.from(char_codes);
+    return new Uint8Array(char_codes);
 };
 
 function decode_tuple (ascii_tuple : string) : number[] {

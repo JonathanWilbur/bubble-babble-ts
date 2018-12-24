@@ -7,8 +7,8 @@ function encode(input) {
     let checksum = 1;
     let i = 0;
     while (i + 1 < input.length) {
-        const byte1 = input.readUInt8(i);
-        const byte2 = input.readUInt8(i + 1);
+        const byte1 = input[i];
+        const byte2 = input[i + 1];
         result += odd_partial(byte1, checksum);
         const d = ((byte2 >> 4) & 15);
         const e = (byte2 & 15);
@@ -17,7 +17,7 @@ function encode(input) {
         i += 2;
     }
     if (i < input.length) {
-        const byte1 = input.readUInt8(i);
+        const byte1 = input[i];
         result += odd_partial(byte1, checksum);
     }
     else {
@@ -66,7 +66,7 @@ function decode(input) {
         const byte1 = decode_3part_byte(tuple[0], tuple[1], tuple[2], checksum);
         char_codes.push(byte1);
     }
-    return Buffer.from(char_codes);
+    return new Uint8Array(char_codes);
 }
 exports.decode = decode;
 ;
@@ -81,7 +81,7 @@ function decode_tuple(ascii_tuple) {
 }
 ;
 let decode_3part_byte = function (a, b, c, checksum) {
-    let high = (a - (checksum % 6) + 6) % 6;
+    let high = ((a - (checksum % 6) + 6) % 6);
     let mid = b;
     let low = (c - (Math.floor(checksum / 6) % 6) + 6) % 6;
     if (high >= 4 || low >= 4)
