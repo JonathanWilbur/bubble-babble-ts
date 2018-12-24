@@ -2,7 +2,15 @@ const vowels : string = 'aeiouy';
 const consonants : string = 'bcdfghklmnprstvzx';
 
 export
-function encode (input : Uint8Array) {
+class BubbleBabbleError extends Error {
+    constructor (message : string) {
+        super(message);
+        Object.setPrototypeOf(this, BubbleBabbleError.prototype);
+    }
+}
+
+export
+function encode (input : Uint8Array) : string {
     let result : string = '';
     let checksum : number = 1;
     let i : number = 0;
@@ -47,10 +55,11 @@ function even_partial (checksum : number) : string {
 export
 function decode (input : string) : Uint8Array {
     if (input.substr(0, 1) !== 'x' || input.substr(-1, 1) !== 'x')
-        throw new Error('Corrupt string');
+        throw new BubbleBabbleError(`Bubble-Babble did not start with or end with an 'x'. Input: '${input}'.`);
 
     let ascii_tuples : RegExpMatchArray | null = input.substring(1, input.length - 1).match(/.{3,6}/g);
-    if (!ascii_tuples) throw new Error('Corrupt string');
+    if (!ascii_tuples)
+        throw new BubbleBabbleError(`Bubble-Babble did not contain ASCII tuples. Input: '${input}'.`);
     let char_codes = [];
     let checksum = 1;
     let i : number = 0;
@@ -69,7 +78,7 @@ function decode (input : string) : Uint8Array {
     const tuple : number[] = decode_tuple(ascii_tuples[ascii_tuples.length - 1]);
     if (tuple[1] === 16) {
         if (tuple[0] !== checksum % 6 || tuple[2] !== Math.floor(checksum / 6))
-            throw new Error('Corrupt string');
+            throw new BubbleBabbleError(`Invalid checksum on Bubble-Babble. Char_codes: ${char_codes}, tuple: ${tuple}, checksum: ${checksum},`);
     } else {
         const byte1 : number = decode_3part_byte(tuple[0], tuple[1], tuple[2], checksum);
         char_codes.push(byte1);
@@ -87,11 +96,13 @@ function decode_tuple (ascii_tuple : string) : number[] {
     ];
 };
 
-let decode_3part_byte = function(a : number, b : number, c : number, checksum : number) {
+function decode_3part_byte (a : number, b : number, c : number, checksum : number) : number {
     let high : number = ((a - (checksum % 6) + 6) % 6);
     let mid : number = b;
     let low : number = (c - (Math.floor(checksum / 6) % 6) + 6) % 6;
-    if (high >= 4 || low >= 4) throw new Error('Corrupt string');
+    if (high >= 4 || low >= 4)
+        // I honestly don't know what's going on here...
+        throw new BubbleBabbleError("Corrupted Bubble-Babble string.");
     return ((high << 6) | (mid << 2) | low);
 };
 

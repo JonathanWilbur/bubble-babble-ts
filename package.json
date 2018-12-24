@@ -1,6 +1,6 @@
 {
   "name": "bubble-babble-ts",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Bubble-Babble encoding and decoding",
   "main": "./dist/index.js",
   "directories": {
@@ -8,9 +8,14 @@
     "test": "test"
   },
   "dependencies": {},
-  "devDependencies": {},
+  "devDependencies": {
+    "ts-loader": "^5.3.2",
+    "webpack": "^4.28.2"
+  },
   "files": [
-    "dist/bubblebabble.js"
+    "dist/bubblebabble.js",
+    "dist/bubblebabble.min.js",
+    "dist/bubblebabble.d.ts"
   ],
   "scripts": {
     "test": "node ./test/test.js"

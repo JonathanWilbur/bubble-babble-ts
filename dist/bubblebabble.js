@@ -2,6 +2,13 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 const vowels = 'aeiouy';
 const consonants = 'bcdfghklmnprstvzx';
+class BubbleBabbleError extends Error {
+    constructor(message) {
+        super(message);
+        Object.setPrototypeOf(this, BubbleBabbleError.prototype);
+    }
+}
+exports.BubbleBabbleError = BubbleBabbleError;
 function encode(input) {
     let result = '';
     let checksum = 1;
@@ -42,10 +49,10 @@ function even_partial(checksum) {
 ;
 function decode(input) {
     if (input.substr(0, 1) !== 'x' || input.substr(-1, 1) !== 'x')
-        throw new Error('Corrupt string');
+        throw new BubbleBabbleError(`Bubble-Babble did not start with or end with an 'x'. Input: '${input}'.`);
     let ascii_tuples = input.substring(1, input.length - 1).match(/.{3,6}/g);
     if (!ascii_tuples)
-        throw new Error('Corrupt string');
+        throw new BubbleBabbleError(`Bubble-Babble did not contain ASCII tuples. Input: '${input}'.`);
     let char_codes = [];
     let checksum = 1;
     let i = 0;
@@ -60,7 +67,7 @@ function decode(input) {
     const tuple = decode_tuple(ascii_tuples[ascii_tuples.length - 1]);
     if (tuple[1] === 16) {
         if (tuple[0] !== checksum % 6 || tuple[2] !== Math.floor(checksum / 6))
-            throw new Error('Corrupt string');
+            throw new BubbleBabbleError(`Invalid checksum on Bubble-Babble. Char_codes: ${char_codes}, tuple: ${tuple}, checksum: ${checksum},`);
     }
     else {
         const byte1 = decode_3part_byte(tuple[0], tuple[1], tuple[2], checksum);
@@ -80,14 +87,15 @@ function decode_tuple(ascii_tuple) {
     ];
 }
 ;
-let decode_3part_byte = function (a, b, c, checksum) {
+function decode_3part_byte(a, b, c, checksum) {
     let high = ((a - (checksum % 6) + 6) % 6);
     let mid = b;
     let low = (c - (Math.floor(checksum / 6) % 6) + 6) % 6;
     if (high >= 4 || low >= 4)
-        throw new Error('Corrupt string');
+        throw new BubbleBabbleError("Corrupted Bubble-Babble string.");
     return ((high << 6) | (mid << 2) | low);
-};
+}
+;
 function decode_2part_byte(d, e) {
     return ((d << 4) | e);
 }
